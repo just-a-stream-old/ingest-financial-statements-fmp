@@ -1,0 +1,48 @@
+server.port: ${API_WEB_SERVER_PORT:7001}
+
+context:
+  envName: ${CONTEXT_ENV_NAME:nonprod}
+  version: ${CONTEXT_VERSION:v1}
+
+client:
+  fmp:
+    request.delay.ms: 10
+    baseUrl: financialmodelingprep.com/api/v3/
+    security.key: ${CLIENT_API_FMP_SECURITY_KEY:0b5b3cc1a7e9a9e7fd45afe22440dcc4}
+    resource:
+      balanceSheet: balance-sheet-statement/
+      cashFlow: cash-flow-statement/
+      incomeStatement: income-statement/
+
+kafka.bindings.publisher:
+  partitions: 1
+  replicas: 3
+  fmp:
+    fmpTickers: fmp.nonprod.financial.tickers.ingestion.v1
+    balanceSheet: fmp.${CONTEXT_ENV_NAME}.financial.balance_sheet.ingestion.${CONTEXT_VERSION}
+    cashFlow: fmp.${CONTEXT_ENV_NAME}.financial.cash_flow.ingestion.${CONTEXT_VERSION}
+    incomeStatement: fmp.${CONTEXT_ENV_NAME}.income_statement.tickers.ingestion.${CONTEXT_VERSION}
+
+spring:
+  # Spring Kafka
+  kafka:
+    bootstrap-servers: ${KAFKA_BROKER_ADDRESS:localhost:9092}
+    properties:
+      max.request.size: 2000000
+      ssl.endpoint.identification.algorithm: ${SECURITY_SSL_ENDPOINT_ID_ALGO}
+      sasl.mechanism: ${SECURITY_SASL_MECHANISM}
+      security.protocol: ${SECURITY_PROTOCOL}
+      sasl.jaas.config: ${SECURITY_SASL_JAAS_CONFIG}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      group-id: consumer_id_0000001
+      auto-offset-reset: earliest
+      properties.spring.json.trusted.packages: "*"
+
+  # Spring WebFlux
+  codec:
+    max-in-memory-size: "20MB"
