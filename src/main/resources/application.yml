@@ -21,7 +21,7 @@ kafka.bindings.publisher:
     fmpTickers: fmp.nonprod.financial.tickers.ingestion.v1
     balanceSheet: fmp.${CONTEXT_ENV_NAME}.financial.balance_sheet.ingestion.${CONTEXT_VERSION}
     cashFlow: fmp.${CONTEXT_ENV_NAME}.financial.cash_flow.ingestion.${CONTEXT_VERSION}
-    incomeStatement: fmp.${CONTEXT_ENV_NAME}.income_statement.tickers.ingestion.${CONTEXT_VERSION}
+    incomeStatement: fmp.${CONTEXT_ENV_NAME}.income_statement.ingestion.${CONTEXT_VERSION}
 
 spring:
   # Spring Kafka
@@ -39,7 +39,7 @@ spring:
     consumer:
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      group-id: ingest_financial_fundamentals_fmp_consumer_ticker_id_00000040
+      group-id: ingest_financial_fundamentals_fmp_consumer_ticker_id_00000042
       auto-offset-reset: earliest
       properties.spring.json.trusted.packages: "*"
 

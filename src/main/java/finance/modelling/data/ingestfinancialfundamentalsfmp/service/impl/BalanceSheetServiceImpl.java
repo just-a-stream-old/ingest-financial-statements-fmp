@@ -70,22 +70,22 @@ public class BalanceSheetServiceImpl implements BalanceSheetService {
                 );
     }
 
-    public void ingestTickerQuarterlyBalanceSheets(String ticker) {
+    public void ingestTickerQuarterlyBalanceSheets(String symbol) {
         fmpClient
-                .getTickerQuarterlyBalanceSheets(buildQuarterlyBalanceSheetUri(ticker))
+                .getTickerQuarterlyBalanceSheets(buildQuarterlyBalanceSheetUri(symbol))
                 .doOnNext(balanceSheet -> kafkaPublisher.publishMessage(outputBalanceSheetTopic, balanceSheet))
                 .subscribe(
                         balanceSheet -> LogClient.logInfoDataItemReceived(
                                 balanceSheet.getSymbol(), FmpBalanceSheetsDTO.class, logResourcePath),
-                        error ->  fmHelper.respondToErrorType(ticker, FmpBalanceSheetsDTO.class, error, logResourcePath)
+                        error ->  fmHelper.respondToErrorType(symbol, FmpBalanceSheetsDTO.class, error, logResourcePath)
                 );
     }
 
-    private URI buildQuarterlyBalanceSheetUri(String ticker) {
+    private URI buildQuarterlyBalanceSheetUri(String symbol) {
         return UriComponentsBuilder.newInstance()
                 .scheme("https")
                 .host(fmpBaseUrl)
-                .path(balanceSheetResourceUrl.concat(ticker))
+                .path(balanceSheetResourceUrl.concat(symbol))
                 .queryParam("period", "quarter")
                 .queryParam("apikey", fmpApiKey)
                 .build()

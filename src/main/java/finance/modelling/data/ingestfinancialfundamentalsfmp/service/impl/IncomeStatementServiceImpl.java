@@ -71,22 +71,22 @@ public class IncomeStatementServiceImpl implements IncomeStatementService {
                 );
     }
 
-    public void ingestTickerQuarterlyIncomeStatements(String ticker) {
+    public void ingestTickerQuarterlyIncomeStatements(String symbol) {
         fmpClient
-                .getTickerQuarterlyIncomeStatements(buildQuarterlyIncomeStatementUri(ticker))
+                .getTickerQuarterlyIncomeStatements(buildQuarterlyIncomeStatementUri(symbol))
                 .doOnNext(incomeStatement -> kafkaPublisher.publishMessage(outputIncomeStatementTopic, incomeStatement))
                 .subscribe(
                         incomeStatement -> LogClient.logInfoDataItemReceived(
                                 incomeStatement.getSymbol(), FmpIncomeStatementsDTO.class, logResourcePath),
-                        error ->  fmHelper.respondToErrorType(ticker, FmpIncomeStatementsDTO.class, error, logResourcePath)
+                        error ->  fmHelper.respondToErrorType(symbol, FmpIncomeStatementsDTO.class, error, logResourcePath)
                 );
     }
 
-    private URI buildQuarterlyIncomeStatementUri(String ticker) {
+    private URI buildQuarterlyIncomeStatementUri(String symbol) {
         return UriComponentsBuilder.newInstance()
                 .scheme("https")
                 .host(fmpBaseUrl)
-                .path(incomeStatementResourceUrl.concat(ticker))
+                .path(incomeStatementResourceUrl.concat(symbol))
                 .queryParam("period", "quarter")
                 .queryParam("apikey", fmpApiKey)
                 .build()

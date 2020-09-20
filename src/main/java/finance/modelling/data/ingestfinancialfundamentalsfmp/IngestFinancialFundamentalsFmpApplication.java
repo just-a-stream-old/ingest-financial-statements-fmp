@@ -33,6 +33,7 @@ public class IngestFinancialFundamentalsFmpApplication {
 
 	// Todo: Add fmp client configuration to group together related @Values injected into services
 	// Todo: Create 'AllFinancialStatementsService' that does the below more cleanly - calls other services
+	// Todo: Send certain failures to DLQ or implement a stateful retry schedule
 
 	@PostConstruct
 	void run() {
