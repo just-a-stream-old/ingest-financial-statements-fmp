@@ -23,6 +23,8 @@ public class IngestFinancialFundamentalsFmpApplication {
 	@PostConstruct
 	void run() {
 		balanceSheetService.ingestAllQuarterlyBalanceSheets();
+		cashFlowService.ingestAllQuarterlyCashFlows();
+		incomeStatementService.ingestAllQuarterlyIncomeStatements();
 	}
 
 }
