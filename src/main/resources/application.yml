@@ -6,7 +6,7 @@ context:
 
 client:
   fmp:
-    request.delay.ms: 150
+    request.delay.ms: 330
     baseUrl: financialmodelingprep.com/api/v3
     security.key: ${CLIENT_API_FMP_SECURITY_KEY:0b5b3cc1a7e9a9e7fd45afe22440dcc4}
     resource:
@@ -15,7 +15,7 @@ client:
       incomeStatement: income-statement/
 
 kafka.bindings.publisher:
-  partitions: 1
+  partitions: 6
   replicas: 3
   fmp:
     fmpTickers: fmp.nonprod.financial.tickers.ingestion.v1
@@ -39,7 +39,7 @@ spring:
     consumer:
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      group-id: ingest_financial_fundamentals_fmp_consumer_ticker_id_00000007
+      group-id: ingest_financial_fundamentals_fmp_consumer_ticker_id_00000025
       auto-offset-reset: earliest
       properties.spring.json.trusted.packages: "*"
 

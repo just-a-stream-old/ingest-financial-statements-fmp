@@ -9,7 +9,6 @@ import finance.modelling.fmcommons.data.logging.LogClient;
 import finance.modelling.fmcommons.data.logging.LogConsumer;
 import finance.modelling.fmcommons.data.schema.fmp.dto.FmpBalanceSheetsDTO;
 import finance.modelling.fmcommons.data.schema.fmp.dto.FmpTickerDTO;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -20,6 +19,7 @@ import java.time.Duration;
 import static finance.modelling.fmcommons.data.logging.LogClient.buildResourcePath;
 import static finance.modelling.fmcommons.data.logging.LogConsumer.determineTraceIdFromHeaders;
 
+@Service
 public class BalanceSheetServiceImpl implements BalanceSheetService {
 
     private final FModellingClientHelper fmHelper;
@@ -61,6 +61,7 @@ public class BalanceSheetServiceImpl implements BalanceSheetService {
     public void ingestAllQuarterlyBalanceSheets() {
         kafkaConsumer
                 .receiveMessages(inputTickerTopic)
+                .delayElements(Duration.ofMillis(requestDelayMs))
                 .doOnNext(message -> ingestTickerQuarterlyBalanceSheets(message.value().getSymbol()))
                 .subscribe(
                         message -> LogConsumer.logInfoDataItemConsumed(
@@ -72,7 +73,6 @@ public class BalanceSheetServiceImpl implements BalanceSheetService {
     public void ingestTickerQuarterlyBalanceSheets(String ticker) {
         fmpClient
                 .getTickerQuarterlyBalanceSheets(buildQuarterlyBalanceSheetUri(ticker))
-                .delayElement(Duration.ofMillis(requestDelayMs))
                 .doOnNext(balanceSheet -> kafkaPublisher.publishMessage(outputBalanceSheetTopic, balanceSheet))
                 .subscribe(
                         balanceSheet -> LogClient.logInfoDataItemReceived(

@@ -7,26 +7,19 @@ import finance.modelling.data.ingestfinancialfundamentalsfmp.service.contract.In
 import finance.modelling.fmcommons.data.helper.client.FModellingClientHelper;
 import finance.modelling.fmcommons.data.logging.LogClient;
 import finance.modelling.fmcommons.data.logging.LogConsumer;
-import finance.modelling.fmcommons.data.schema.fmp.dto.FmpBalanceSheetsDTO;
 import finance.modelling.fmcommons.data.schema.fmp.dto.FmpIncomeStatementsDTO;
 import finance.modelling.fmcommons.data.schema.fmp.dto.FmpTickerDTO;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 import java.time.Duration;
-import java.util.LinkedList;
-import java.util.List;
 
-import static finance.modelling.fmcommons.data.exception.ExceptionParser.isKafkaException;
-import static finance.modelling.fmcommons.data.exception.ExceptionParser.isSaslAuthentificationException;
 import static finance.modelling.fmcommons.data.logging.LogClient.buildResourcePath;
 import static finance.modelling.fmcommons.data.logging.LogConsumer.determineTraceIdFromHeaders;
 
 @Service
-@Slf4j
 public class IncomeStatementServiceImpl implements IncomeStatementService {
 
     private final FModellingClientHelper fmHelper;
