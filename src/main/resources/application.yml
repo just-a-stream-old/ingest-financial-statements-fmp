@@ -6,7 +6,7 @@ context:
 
 client:
   fmp:
-    request.delay.ms: 330
+    request.delay.ms: 380
     baseUrl: financialmodelingprep.com/api/v3
     security.key: ${CLIENT_API_FMP_SECURITY_KEY:0b5b3cc1a7e9a9e7fd45afe22440dcc4}
     resource:
@@ -39,7 +39,7 @@ spring:
     consumer:
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      group-id: ingest_financial_fundamentals_fmp_consumer_ticker_id_00000025
+      group-id: ingest_financial_fundamentals_fmp_consumer_ticker_id_00000040
       auto-offset-reset: earliest
       properties.spring.json.trusted.packages: "*"
 

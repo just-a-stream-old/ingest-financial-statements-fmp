@@ -43,8 +43,8 @@ public class FmpClientImpl implements FmpClient {
                 .bodyToFlux(FmpIncomeStatementDTO.class)
                 .collectList()
                 .map(FmpFundamentalsMapper::mapIncomeStatementDTOListToIncomeStatementsDTO)
-                .onErrorMap(fmHelper::returnTechnicalException);
-//                .retryWhen(getRetry());
+                .onErrorMap(fmHelper::returnTechnicalException)
+                .retryWhen(getRetry());
     }
 
     public Mono<FmpBalanceSheetsDTO> getTickerQuarterlyBalanceSheets(URI resourceUri) {
@@ -55,8 +55,8 @@ public class FmpClientImpl implements FmpClient {
                 .bodyToFlux(FmpBalanceSheetDTO.class)
                 .collectList()
                 .map(FmpFundamentalsMapper::mapBalanceSheetDTOListToBalanceSheetsDTO)
-                .onErrorMap(fmHelper::returnTechnicalException);
-//                .retryWhen(getRetry());
+                .onErrorMap(fmHelper::returnTechnicalException)
+                .retryWhen(getRetry());
     }
 
     public Mono<FmpCashFlowsDTO> getTickerQuarterlyCashFlows(URI resourceUri) {
@@ -67,13 +67,13 @@ public class FmpClientImpl implements FmpClient {
                 .bodyToFlux(FmpCashFlowDTO.class)
                 .collectList()
                 .map(FmpFundamentalsMapper::mapCashFlowDTOListToCashFlowsDTO)
-                .onErrorMap(fmHelper::returnTechnicalException);
-//                .retryWhen(getRetry());
+                .onErrorMap(fmHelper::returnTechnicalException)
+                .retryWhen(getRetry());
     }
 
     protected Retry getRetry() {
         return Retry
-                .backoff(3, Duration.ofMillis(1000000))
+                .backoff(3, Duration.ofMillis(4000000))
                 .filter(fmHelper::isRetryableException);
     }
 }
