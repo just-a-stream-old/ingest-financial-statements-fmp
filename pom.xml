@@ -8,10 +8,10 @@
 		<version>2.3.4.RELEASE</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>finance.modelling.data</groupId>
-	<artifactId>ingest-financial-fundamentals-fmp</artifactId>
+	<groupId>finance.modelling.data.ingest</groupId>
+	<artifactId>ingest-financial-statements-fmp</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>ingest-financial-fundamentals-fmp</name>
+	<name>ingest-financial-statements-fmp</name>
 	<description>Ingest Financial Modelling Prep financial statements.</description>
 
 	<properties>
