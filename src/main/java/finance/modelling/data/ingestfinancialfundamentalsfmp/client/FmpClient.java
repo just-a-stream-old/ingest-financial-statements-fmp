@@ -1,9 +1,9 @@
 package finance.modelling.data.ingestfinancialfundamentalsfmp.client;
 
-import finance.modelling.data.ingestfinancialfundamentalsfmp.client.dto.FmpBalanceSheetsDTO;
-import finance.modelling.data.ingestfinancialfundamentalsfmp.client.dto.FmpCashFlowsDTO;
-import finance.modelling.data.ingestfinancialfundamentalsfmp.client.dto.FmpIncomeStatementsDTO;
-import finance.modelling.data.ingestfinancialfundamentalsfmp.client.dto.FmpTickerDTO;
+import finance.modelling.fmcommons.data.schema.fmp.dto.FmpBalanceSheetsDTO;
+import finance.modelling.fmcommons.data.schema.fmp.dto.FmpCashFlowsDTO;
+import finance.modelling.fmcommons.data.schema.fmp.dto.FmpIncomeStatementsDTO;
+import finance.modelling.fmcommons.data.schema.fmp.dto.FmpTickerDTO;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 

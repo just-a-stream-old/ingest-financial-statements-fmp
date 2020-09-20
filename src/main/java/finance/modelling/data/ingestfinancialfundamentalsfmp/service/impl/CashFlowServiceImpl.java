@@ -2,12 +2,14 @@ package finance.modelling.data.ingestfinancialfundamentalsfmp.service.impl;
 
 import finance.modelling.data.ingestfinancialfundamentalsfmp.api.consumer.KafkaConsumerTickerImpl;
 import finance.modelling.data.ingestfinancialfundamentalsfmp.client.FmpClient;
-import finance.modelling.data.ingestfinancialfundamentalsfmp.client.dto.FmpBalanceSheetsDTO;
-import finance.modelling.data.ingestfinancialfundamentalsfmp.client.dto.FmpTickerDTO;
 import finance.modelling.data.ingestfinancialfundamentalsfmp.publisher.impl.KafkaPublisherCashFlowImpl;
 import finance.modelling.data.ingestfinancialfundamentalsfmp.service.contract.CashFlowService;
+import finance.modelling.fmcommons.data.helper.client.FModellingClientHelper;
 import finance.modelling.fmcommons.data.logging.LogClient;
 import finance.modelling.fmcommons.data.logging.LogConsumer;
+import finance.modelling.fmcommons.data.schema.fmp.dto.FmpBalanceSheetsDTO;
+import finance.modelling.fmcommons.data.schema.fmp.dto.FmpCashFlowsDTO;
+import finance.modelling.fmcommons.data.schema.fmp.dto.FmpTickerDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -27,6 +29,7 @@ import static finance.modelling.fmcommons.data.logging.LogConsumer.determineTrac
 @Slf4j
 public class CashFlowServiceImpl implements CashFlowService {
 
+    private final FModellingClientHelper fmHelper;
     private final KafkaConsumerTickerImpl kafkaConsumer;
     private final String inputTickerTopic;
     private final FmpClient fmpClient;
@@ -39,6 +42,7 @@ public class CashFlowServiceImpl implements CashFlowService {
     private final Long requestDelayMs;
 
     public CashFlowServiceImpl(
+            FModellingClientHelper fmHelper,
             KafkaConsumerTickerImpl kafkaConsumer,
             @Value("${kafka.bindings.publisher.fmp.fmpTickers}") String inputTickerTopic,
             FmpClient fmpClient,
@@ -46,8 +50,9 @@ public class CashFlowServiceImpl implements CashFlowService {
             @Value("${kafka.bindings.publisher.fmp.cashFlow}") String outputCashFlowTopic,
             @Value("${client.fmp.security.key}") String fmpApiKey,
             @Value("${client.fmp.baseUrl}") String fmpBaseUrl,
-            @Value("${kafka.bindings.publisher.fmp.bashFlow}") String cashFlowResourceUrl,
-            @Value("${client.eod.request.delay.ms}") Long requestDelayMs) {
+            @Value("${kafka.bindings.publisher.fmp.cashFlow}") String cashFlowResourceUrl,
+            @Value("${client.fmp.request.delay.ms}") Long requestDelayMs) {
+        this.fmHelper = fmHelper;
         this.kafkaConsumer = kafkaConsumer;
         this.inputTickerTopic = inputTickerTopic;
         this.fmpClient = fmpClient;
@@ -78,9 +83,9 @@ public class CashFlowServiceImpl implements CashFlowService {
                 .getTickerQuarterlyCashFlows(buildQuarterlyCashFlowUri(ticker))
                 .doOnNext(cashFlow -> kafkaPublisher.publishMessage(outputCashFlowTopic, cashFlow))
                 .subscribe(
-                        balanceSheet -> LogClient.logInfoDataItemReceived(
-                                balanceSheet.getSymbol(), FmpBalanceSheetsDTO.class, logResourcePath),
-                        this::respondToErrorType
+                        cashFlow -> LogClient.logInfoDataItemReceived(
+                                cashFlow.getSymbol(), FmpCashFlowsDTO.class, logResourcePath),
+                        error ->  fmHelper.respondToErrorType(ticker, FmpCashFlowsDTO.class, error, logResourcePath)
                 );
     }
 
@@ -93,23 +98,5 @@ public class CashFlowServiceImpl implements CashFlowService {
                 .queryParam("apikey", fmpApiKey)
                 .build()
                 .toUri();
-    }
-
-    private void respondToErrorType(Throwable error) {
-        List<String> responseToError = new LinkedList<>();
-
-        if (isKafkaException(error)) {
-            responseToError.add("Print stacktrace");
-            error.printStackTrace();
-        }
-        else if (isSaslAuthentificationException(error)) {
-            responseToError.add("Print error message");
-            log.error(error.getMessage());
-        }
-        else {
-            responseToError.add("Default");
-        }
-        LogClient.logErrorFailedToReceiveDataItem(
-                "Unknown", FmpBalanceSheetsDTO.class, error, logResourcePath, responseToError);
     }
 }

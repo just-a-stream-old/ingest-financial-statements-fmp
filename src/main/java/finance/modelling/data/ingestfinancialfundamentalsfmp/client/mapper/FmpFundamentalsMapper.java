@@ -1,6 +1,7 @@
 package finance.modelling.data.ingestfinancialfundamentalsfmp.client.mapper;
 
-import finance.modelling.data.ingestfinancialfundamentalsfmp.client.dto.*;
+
+import finance.modelling.fmcommons.data.schema.fmp.dto.*;
 
 import java.util.List;
 

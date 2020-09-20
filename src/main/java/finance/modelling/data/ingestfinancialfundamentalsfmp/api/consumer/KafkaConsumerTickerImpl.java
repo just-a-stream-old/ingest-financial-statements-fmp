@@ -1,6 +1,6 @@
 package finance.modelling.data.ingestfinancialfundamentalsfmp.api.consumer;
 
-import finance.modelling.data.ingestfinancialfundamentalsfmp.client.dto.FmpTickerDTO;
+import finance.modelling.fmcommons.data.schema.fmp.dto.FmpTickerDTO;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.kafka.receiver.KafkaReceiver;

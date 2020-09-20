@@ -1,8 +1,8 @@
 package finance.modelling.data.ingestfinancialfundamentalsfmp.publisher.impl;
 
-import finance.modelling.data.ingestfinancialfundamentalsfmp.client.dto.FmpBalanceSheetsDTO;
 import finance.modelling.data.ingestfinancialfundamentalsfmp.publisher.contract.KafkaPublisher;
 import finance.modelling.fmcommons.data.logging.LogPublisher;
+import finance.modelling.fmcommons.data.schema.fmp.dto.FmpBalanceSheetsDTO;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
