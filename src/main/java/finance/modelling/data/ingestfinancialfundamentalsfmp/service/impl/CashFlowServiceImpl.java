@@ -71,22 +71,22 @@ public class CashFlowServiceImpl implements CashFlowService {
                 );
     }
 
-    public void ingestTickerQuarterlyCashFlows(String ticker) {
+    public void ingestTickerQuarterlyCashFlows(String symbol) {
         fmpClient
-                .getTickerQuarterlyCashFlows(buildQuarterlyCashFlowUri(ticker))
+                .getTickerQuarterlyCashFlows(buildQuarterlyCashFlowUri(symbol))
                 .doOnNext(cashFlow -> kafkaPublisher.publishMessage(outputCashFlowTopic, cashFlow))
                 .subscribe(
                         cashFlow -> LogClient.logInfoDataItemReceived(
                                 cashFlow.getSymbol(), FmpCashFlowsDTO.class, logResourcePath),
-                        error ->  fmHelper.respondToErrorType(ticker, FmpCashFlowsDTO.class, error, logResourcePath)
+                        error ->  fmHelper.respondToErrorType(symbol, FmpCashFlowsDTO.class, error, logResourcePath)
                 );
     }
 
-    private URI buildQuarterlyCashFlowUri(String ticker) {
+    private URI buildQuarterlyCashFlowUri(String symbol) {
         return UriComponentsBuilder.newInstance()
                 .scheme("https")
                 .host(fmpBaseUrl)
-                .path(cashFlowResourceUrl.concat(ticker))
+                .path(cashFlowResourceUrl.concat(symbol))
                 .queryParam("period", "quarter")
                 .queryParam("apikey", fmpApiKey)
                 .build()
