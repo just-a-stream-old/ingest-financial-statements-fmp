@@ -15,7 +15,7 @@ client:
       incomeStatement: income-statement/
 
 kafka.bindings.publisher:
-  partitions: 3
+  partitions: 1
   replicas: 3
   fmp:
     fmpTickers: fmp.nonprod.financial.tickers.ingestion.v1
@@ -26,6 +26,7 @@ kafka.bindings.publisher:
 spring:
   # Spring Kafka
   kafka:
+    header.traceId: x-trace-id
     bootstrap-servers: ${KAFKA_BROKER_ADDRESS:localhost:9092}
     properties:
       max.request.size: 2000000
@@ -39,7 +40,7 @@ spring:
     consumer:
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      group-id: ingest_financial_fundamentals_fmp_consumer_ticker_id_00000045
+      group-id: ingest_financial_fundamentals_fmp_consumer_ticker_id_00000047
       auto-offset-reset: earliest
       properties.spring.json.trusted.packages: "*"
 

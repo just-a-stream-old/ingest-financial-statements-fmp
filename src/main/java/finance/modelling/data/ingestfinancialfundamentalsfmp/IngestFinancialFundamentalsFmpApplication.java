@@ -37,15 +37,18 @@ public class IngestFinancialFundamentalsFmpApplication {
 
 	@PostConstruct
 	void run() {
-		kafkaConsumerTicker
-				.receiveMessages(inputTickerTopic)
-				.delayElements(Duration.ofMillis(330))
-				.doOnNext(this::consumeAllFmpFinancialStatements)
-				.subscribe(
-						message -> LogConsumer.logInfoDataItemConsumed(
-								FmpTickerDTO.class, inputTickerTopic, determineTraceIdFromHeaders(message.headers())),
-						error -> LogConsumer.logErrorFailedToConsumeDataItem(FmpTickerDTO.class, inputTickerTopic)
-				);
+//		kafkaConsumerTicker
+//				.receiveMessages(inputTickerTopic)
+//				.delayElements(Duration.ofMillis(330))
+//				.doOnNext(this::consumeAllFmpFinancialStatements)
+//				.subscribe(
+//						message -> LogConsumer.logInfoDataItemConsumed(FmpTickerDTO.class, inputTickerTopic,
+//								determineTraceIdFromHeaders(message.headers(), "x-trace-id")),
+//						error -> LogConsumer.logErrorFailedToConsumeDataItem(FmpTickerDTO.class, inputTickerTopic)
+//				);
+		balanceSheetService.ingestTickerQuarterlyBalanceSheets("ABEOW");
+		cashFlowService.ingestTickerQuarterlyCashFlows("ABEOW");
+		incomeStatementService.ingestTickerQuarterlyIncomeStatements("ABEOW");
 	}
 
 	private void consumeAllFmpFinancialStatements(ReceiverRecord<String, FmpTickerDTO> tickerMessage) {
