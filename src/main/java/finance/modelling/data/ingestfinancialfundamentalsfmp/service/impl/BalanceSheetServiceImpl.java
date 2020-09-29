@@ -3,18 +3,17 @@ package finance.modelling.data.ingestfinancialfundamentalsfmp.service.impl;
 import finance.modelling.data.ingestfinancialfundamentalsfmp.api.consumer.KafkaConsumerTickerImpl;
 import finance.modelling.data.ingestfinancialfundamentalsfmp.client.FmpClient;
 import finance.modelling.data.ingestfinancialfundamentalsfmp.publisher.impl.KafkaPublisherBalanceSheetImpl;
+import finance.modelling.data.ingestfinancialfundamentalsfmp.service.config.FmpApiConfig;
+import finance.modelling.data.ingestfinancialfundamentalsfmp.service.config.TopicConfig;
 import finance.modelling.data.ingestfinancialfundamentalsfmp.service.contract.BalanceSheetService;
 import finance.modelling.fmcommons.data.helper.client.FModellingClientHelper;
 import finance.modelling.fmcommons.data.logging.LogClient;
 import finance.modelling.fmcommons.data.logging.LogConsumer;
 import finance.modelling.fmcommons.data.schema.fmp.dto.FmpBalanceSheetsDTO;
 import finance.modelling.fmcommons.data.schema.fmp.dto.FmpTickerDTO;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
-
 import java.net.URI;
-import java.time.Duration;
 
 import static finance.modelling.fmcommons.data.logging.LogClient.buildResourcePath;
 import static finance.modelling.fmcommons.data.logging.LogConsumer.determineTraceIdFromHeaders;
@@ -23,57 +22,44 @@ import static finance.modelling.fmcommons.data.logging.LogConsumer.determineTrac
 public class BalanceSheetServiceImpl implements BalanceSheetService {
 
     private final FModellingClientHelper fmHelper;
+    private final TopicConfig topics;
     private final KafkaConsumerTickerImpl kafkaConsumer;
-    private final String inputTickerTopic;
     private final FmpClient fmpClient;
+    private final FmpApiConfig fmpApi;
     private final KafkaPublisherBalanceSheetImpl kafkaPublisher;
-    private final String outputBalanceSheetTopic;
-    private final String fmpApiKey;
-    private final String fmpBaseUrl;
-    private final String balanceSheetResourceUrl;
     private final String logResourcePath;
-    private final Long requestDelayMs;
 
     public BalanceSheetServiceImpl(
             FModellingClientHelper fmHelper,
+            TopicConfig topics,
             KafkaConsumerTickerImpl kafkaConsumer,
-            @Value("${kafka.bindings.publisher.fmp.fmpTickers}") String inputTickerTopic,
             FmpClient fmpClient,
-            KafkaPublisherBalanceSheetImpl kafkaPublisher,
-            @Value("${kafka.bindings.publisher.fmp.balanceSheet}") String outputBalanceSheetTopic,
-            @Value("${client.fmp.security.key}") String fmpApiKey,
-            @Value("${client.fmp.baseUrl}") String fmpBaseUrl,
-            @Value("${client.fmp.resource.balanceSheet}") String balanceSheetResourceUrl,
-            @Value("${client.fmp.request.delay.ms}") Long requestDelayMs) {
+            FmpApiConfig fmpApi, KafkaPublisherBalanceSheetImpl kafkaPublisher) {
         this.fmHelper = fmHelper;
         this.kafkaConsumer = kafkaConsumer;
-        this.inputTickerTopic = inputTickerTopic;
         this.fmpClient = fmpClient;
+        this.fmpApi = fmpApi;
         this.kafkaPublisher = kafkaPublisher;
-        this.outputBalanceSheetTopic = outputBalanceSheetTopic;
-        this.fmpApiKey = fmpApiKey;
-        this.fmpBaseUrl = fmpBaseUrl;
-        this.balanceSheetResourceUrl = balanceSheetResourceUrl;
-        this.logResourcePath = buildResourcePath(fmpBaseUrl, balanceSheetResourceUrl);
-        this.requestDelayMs = requestDelayMs;
+        this.topics = topics;
+        this.logResourcePath = buildResourcePath(fmpApi.getBaseUrl(), fmpApi.getBalanceSheetResourceUrl());
     }
 
     public void ingestAllQuarterlyBalanceSheets() {
         kafkaConsumer
-                .receiveMessages(inputTickerTopic)
-                .delayElements(Duration.ofMillis(requestDelayMs))
+                .receiveMessages(topics.getTickerTopic())
+                .delayElements(fmpApi.getRequestDelayMs())
                 .doOnNext(message -> ingestTickerQuarterlyBalanceSheets(message.value().getSymbol()))
                 .subscribe(
-                        message -> LogConsumer.logInfoDataItemConsumed(
-                                FmpTickerDTO.class, inputTickerTopic, determineTraceIdFromHeaders(message.headers())),
-                        error -> LogConsumer.logErrorFailedToConsumeDataItem(FmpTickerDTO.class, inputTickerTopic)
+                        message -> LogConsumer.logInfoDataItemConsumed(FmpTickerDTO.class, topics.getTickerTopic(),
+                                determineTraceIdFromHeaders(message.headers(), topics.getTraceIdHeaderName())),
+                        error -> LogConsumer.logErrorFailedToConsumeDataItem(FmpTickerDTO.class, topics.getTickerTopic())
                 );
     }
 
     public void ingestTickerQuarterlyBalanceSheets(String symbol) {
         fmpClient
                 .getTickerQuarterlyBalanceSheets(buildQuarterlyBalanceSheetUri(symbol))
-                .doOnNext(balanceSheet -> kafkaPublisher.publishMessage(outputBalanceSheetTopic, balanceSheet))
+                .doOnNext(balanceSheet -> kafkaPublisher.publishMessage(topics.getBalanceSheetTopic(), balanceSheet))
                 .subscribe(
                         balanceSheet -> LogClient.logInfoDataItemReceived(
                                 balanceSheet.getSymbol(), FmpBalanceSheetsDTO.class, logResourcePath),
@@ -84,10 +70,10 @@ public class BalanceSheetServiceImpl implements BalanceSheetService {
     private URI buildQuarterlyBalanceSheetUri(String symbol) {
         return UriComponentsBuilder.newInstance()
                 .scheme("https")
-                .host(fmpBaseUrl)
-                .path(balanceSheetResourceUrl.concat(symbol))
+                .host(fmpApi.getBaseUrl())
+                .path(fmpApi.getBalanceSheetResourceUrl().concat(symbol))
                 .queryParam("period", "quarter")
-                .queryParam("apikey", fmpApiKey)
+                .queryParam("apikey", fmpApi.getApiKey())
                 .build()
                 .toUri();
     }
